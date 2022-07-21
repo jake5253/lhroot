@@ -46,371 +46,141 @@ set -x 2>$VERLOG
 
 fetch_dist () {
     distro=${1}
-    folder="/data/${distro}"
+    folder=/data/${distro}
     tmp=/data/local/tmp
     tarball=${tmp}/${distro}.tar.gz
-    local url=''
-    if [ ! -d ${folder} ]; then
-        if [ ! -f ${tarball} ]; then
+    url=''
+    if [ ! -d "${folder}" ]; then
+        if [ ! -f "${tarball}" ]; then
             echo "Downloading Rootfs, please wait..."
-            case $ARCH in
-                arm)
-                    archurl="armv7" ;;
-                arm64)
-                    archurl="aarch64" ;;
-                x86)
-                    archurl="x86" ;;
-                x64)
-                    archurl="x86_64" ;;
-                *)
-                    abort "unknown arch" ;;
-            esac
-            case $distro in
+            case "${distro}" in
                 alpine)
-                    wget "https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/${archurl}/alpine-minirootfs-3.15.4-${archurl}.tar.gz" -qO $tarball & e_spinner
+                    case "${ARCH}" in
+                        arm)
+                            archurl="armv7" ;;
+                        arm64)
+                            archurl="aarch64" ;;
+                        x86)
+                            archurl="x86" ;;
+                        x64)
+                            archurl="x86_64" ;;
+                        *)
+                            abort "unknown arch" ;;
+                    esac
+                    url="https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/${archurl}/alpine-minirootfs-3.15.4-${archurl}.tar.gz"
                 ;;
                 debian)
-                    wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Debian/${archurl}/debian-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                    case $ARCH in
+                        arm)
+                            archurl="armhf" ;;
+                        arm64)
+                            archurl="arm64" ;;
+                        x86)
+                            archurl="i386" ;;
+                        x64)
+                            archurl="amd64" ;;
+                        *)
+                            abort "unknown arch" ;;
+                    esac
+                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Debian/${archurl}/debian-rootfs-${archurl}.tar.xz"
                 ;;
                 ubuntu)
-                    "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Ubuntu/${archurl}/ubuntu-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                    case $ARCH in
+                        arm)
+                            archurl="armhf" ;;
+                        arm64)
+                            archurl="arm64" ;;
+                        x86)
+                            archurl="i386" ;;
+                        x64)
+                            archurl="amd64" ;;
+                        *)
+                            abort "unknown arch"
+                    esac
+                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Ubuntu/${archurl}/ubuntu-rootfs-${archurl}.tar.xz"
                 ;;
                 void)
-                    "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Void/${archurl}/void-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                    case $ARCH in
+                        arm)
+                            archurl="armhf" ;;
+                        arm64)
+                            archurl="arm64" ;;
+                        x86)
+                            archurl="i386" ;;
+                        x64)
+                            archurl="amd64" ;;
+                        *)
+                            abort "unknown arch" ;;
+                    esac
+                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Void/${archurl}/void-rootfs-${archurl}.tar.xz"
                 ;;
                 arch)
-                "https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz" -qO $tarball & e_spinner
-                "https://mirrors.edge.kernel.org/archlinux/iso/2022.05.01/archlinux-bootstrap-2022.05.01-${archurl}.tar.gz" -qO $tarball & e_spinner
-
+                    case $ARCH in
+                        arm)
+                            archurl="armv7"
+                            url="https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz"
+                        ;;
+                        arm64)
+                            archurl="aarch64"
+                            url="https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz"
+                        ;;
+                        x64)
+                            archurl="x86_64"
+                            url="https://mirrors.edge.kernel.org/archlinux/iso/2022.05.01/archlinux-bootstrap-2022.05.01-${archurl}.tar.gz"
+                        ;;
+                        *)
+                            abort "unknown arch, maybe your arch is x64?"
+                    esac
                 ;;
                 manjaro)
-                    if [ "$ARCH" == "arm64" ]; then
-                        wget "https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz"
-                    else
-                        echo "Not available for your architecture"
-                        exit 1;
-                    fi
+                    case $ARCH in
+                        arm64)
+                            url="https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz" ;;
+                        *)
+                            abort "Only Support ARM64" ;;
+                    esac
                 ;;
                 kali)
-                    wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Kali/${archurl}/kali-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                    case $ARCH in
+                        arm)
+                            archurl="armhf" ;;
+                        arm64)
+                            archurl="arm64" ;;
+                        x86)
+                            archurl="i386" ;;
+                        x64)
+                            archurl="amd64" ;;
+                        *)
+                            abort "unknown arch" ;;
+                    esac
+                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Kali/${archurl}/kali-rootfs-${archurl}.tar.xz"
                 ;;
                 fedora)
-                    wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                    case $ARCH in
+                        arm)
+                            archurl="armhf" ;;
+                        arm64)
+                            archurl="arm64" ;;
+                        x64)
+                            archurl="amd64" ;;
+                        *)
+                            abort "unknown/unsupported arch" ;;
+                    esac
+                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz"
                 ;;
+                esac
 
-
-}
-
-alpine () {
-	folder="/data/alpine"
-    tmp="/data/local/tmp"
-	tarball="$tmp/alpine.tar.gz"
-	archurl=
-	if [ -d "$folder" ]; then
-	  first=1
-      echo "skipping downloading"
-	fi
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            case $ARCH in
-                arm)
-                    archurl="armv7" ;;
-                arm64)
-                    archurl="aarch64" ;;
-                x86)
-                    archurl="x86" ;;
-                x64)
-                    archurl="x86_64" ;;
-                *)
-                    abort "unknown arch" ;;
-            esac
-            wget "https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/${archurl}/alpine-minirootfs-3.15.4-${archurl}.tar.gz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
+            wget ${url} -qO $tarball & e_spinner
+            fi
+        mkdir -p "${folder}"
+        cd "${folder}" || abort "Folder could not be found"
         echo "Decompressing Rootfs..."
-        tar xf ${tarball} 2> /dev/null||:
-        cd $HOME
+        tar xf "${tarball}" 2> /dev/null||:
+        cd "${HOME}" || abort '$HOME not found'
     fi
-    echo "Removing rootfs tarball for some space"
+    echo "Removing rootfs tarball"
     rm $tarball
-    echo "You can now launch Alpine with the bootlinux script"
-}
-
-debian () {
-    folder="/data/debian"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/debian.tar.xz"
-    archurl=
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-           echo "Downloading Rootfs, please wait..."
-           case $ARCH in
-               arm)
-                   archurl="armhf" ;;
-               arm64)
-                   archurl="arm64" ;;
-               x86)
-                   archurl="i386" ;;
-               x64)
-                   archurl="amd64" ;;
-               *)
-                   abort "unknown arch" ;;
-            esac
-            wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Debian/${archurl}/debian-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xfJ ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch Debian with the bootlinux script"
-}
-
-ubuntu () {
-    folder="/data/ubuntu"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/ubuntu.tar.xz"
-    archurl=
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            case $ARCH in
-                arm)
-                    archurl="armhf" ;;
-                arm64)
-                    archurl="arm64" ;;
-                x86)
-                    archurl="i386" ;;
-                x64)
-                    archurl="amd64" ;;
-                *)
-                    abort "unknown arch"
-            esac
-            wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Ubuntu/${archurl}/ubuntu-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xfJ ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch Ubuntu with the bootlinux script"
-}
-
-void () {
-    folder="/data/void"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/void.tar.xz"
-    archurl=
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            case $ARCH in
-                arm)
-                    archurl="armhf" ;;
-                arm64)
-                    archurl="arm64" ;;
-                x86)
-                    archurl="i386" ;;
-                x64)
-                    archurl="amd64" ;;
-                *)
-                    abort "unknown arch" ;;
-            esac
-            wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Void/${archurl}/void-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xfJ ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch Void with bootlinux script"
-}
-
-arch_arm () {
-    folder="/data/arch"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/arch.tar.gz"
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            archurl=
-            case $ARCH in
-                arm)
-                    archurl="armv7" ;;
-                arm64)
-                    archurl="aarch64" ;;
-                *)
-                    abort "unknown arch, maybe your arch is x64?"
-            esac
-                wget "https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xf ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch launch Arch Linux with the bootlinux script"
-}
-
-arch_64 () {
-    folder="/data/arch"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/arch.tar.gz"
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            archurl=
-            case $ARCH in
-                x64)
-                    archurl="x86_64" ;;
-                *)
-                    abort "Unknown arch, maybe your arch is x86 or arm?" ;;
-            esac
-            wget "https://mirrors.edge.kernel.org/archlinux/iso/2022.05.01/archlinux-bootstrap-2022.05.01-${archurl}.tar.gz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xf ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch Arch Linux with the bootlinux script"
-}
-
-manjaro () {
-    folder="/data/manjaro"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/manjaro.tar.xz"
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            case $ARCH in
-                arm64)
-                    archurl="https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz" ;;
-                *)
-                    abort "Only Support ARM64" ;;
-            esac
-            wget $archurl -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        tar xf ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch Manjaro with the bootlinux script"
-}
-
-kali () {
-    folder="/data/kali"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/kali.tar.xz"
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            archurl=
-            case $ARCH in
-                arm)
-                    archurl="armhf" ;;
-                arm64)
-                    archurl="arm64" ;;
-                x86)
-                    archurl="i386" ;;
-                x64)
-                    archurl="amd64" ;;
-                *)
-                    abort "unknown arch" ;;
-            esac
-            wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Kali/${archurl}/kali-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xfJ ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space"
-    rm $tarball
-    echo "You can now launch Kali with bootlinux script"
-}
-
-fedora () {
-    folder="/data/fedora"
-    if [ -d "$folder" ]; then
-        first=1
-        echo "skipping downloading"
-    fi
-    tmp="/data/local/tmp"
-    tarball="$tmp/fedora.tar.xz"
-    if [ "$first" != 1 ]; then
-        if [ ! -f $tarball ]; then
-            echo "Downloading Rootfs, please wait..."
-            case $ARCH in
-                arm)
-                    archurl="armhf" ;;
-                arm64)
-                    archurl="arm64" ;;
-                x64)
-                    archurl="amd64" ;;
-                *)
-                    abort "unknown/unsupported arch" ;;
-            esac
-            wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
-        fi
-        mkdir -p "$folder"
-        cd "$folder"
-        echo "Decompressing Rootfs..."
-        tar xfJ ${tarball} 2> /dev/null||:
-        cd $HOME
-    fi
-    echo "Removing rootfs tarball for some space..."
-    rm $tarball
-    echo "You can now launch Fedora with bootlinux script"
+    echo "You can now launch ${distro} with the bootlinux script"
 }
 
 install_chroot () {
@@ -420,29 +190,28 @@ install_chroot () {
         title_div "Install which distro?"
         echo "$div"
         echo "0. Back"
-        echo "1. Arch Linux ARM"
-        echo "2. Arch Linux x64"
-        echo "3. Alpine Linux"
-        echo "4. Debian"
-        echo "5. Fedora"
-        echo "6. Kali Linux"
-        echo "7. Manjaro"
-        echo "8. Ubuntu"
-        echo "9. Void Linux"
+        echo "1. Arch Linux"
+        echo "2. Alpine Linux"
+        echo "3. Debian"
+        echo "4. Fedora"
+        echo "5. Kali Linux"
+        echo "6. Manjaro"
+        echo "7. Ubuntu"
+        echo "8. Void Linux"
         read -r choice?'--> '
         echo " "
         case $choice in
             0) break 3;;
-            1) arch_arm ;;
-            2) arch_64 ;;
-            3) alpine ;;
-            4) debian ;;
-            5) fedora ;;
-            6) kali ;;
-            7) manjaro ;;
-            8) ubuntu ;;
-            9) void ;;
+            1) distro=arch ;;
+            2) distro=alpine ;;
+            3) distro=debian ;;
+            4) distro=fedora ;;
+            5) distro=kali ;;
+            6) distro=manjaro ;;
+            7) distro=ubuntu ;;
+            8) distro=void ;;
         esac
+        fetch_dist $distro
     done
 }
 
@@ -485,7 +254,7 @@ remove_chroot () {
     fi
     if [ $installed ]; then
         killlinux
-        echo "If dev is not successfully unmounted, please reboot your device or your device will be freezed."
+        echo "If dev is not successfully unmounted, please reboot your device or your device will be frozen."
         sleep 1
         echo "I give you 15 seconds to reboot your device if dev is not successfully unmounted."
         sleep 1
