@@ -24,45 +24,27 @@ fi
 [ -z "$isABDevice" ] && { echo "Something went wrong!"; exit 1; }
 
 #=========================== Set Busybox up
-# Variables:
-#  BBok - If busybox detection was ok (true/false)
-#  _bb - Busybox binary directory
-#  _bbname - Busybox name
-
 # set_busybox <busybox binary>
 # alias busybox applets
-set_busybox() {
-  if [ -x "$1" ]; then
-    for i in $(${1} --list); do
+setup_busybox() {
+  _bb=''
+  if [ -x $SYSTEM2/xbin/busybox ]; then
+    _bb=$SYSTEM2/xbin/busybox
+  elif [ -x $SYSTEM2/bin/busybox ]; then
+    _bb=$SYSTEM2/bin/busybox
+  else
+    echo "Busybox not detected";
+    exit 1;
+  fi
+  for i in $(${_bb} --list); do
       if [ "$i" != 'echo' ]; then
         alias "$i"="${1} $i" >/dev/null 2>&1
       fi
-    done
-    _busybox=true
-    _bb=$1
-  fi
+  done
 }
-_busybox=false
-if [ -n $_bb ]; then
-  true
-elif [ -x $SYSTEM2/xbin/busybox ]; then
-  _bb=$SYSTEM2/xbin/busybox
-elif [ -x $SYSTEM2/bin/busybox ]; then
-  _bb=$SYSTEM2/bin/busybox
-else
-  echo "! Busybox not detected"
-  echo "Please install one (@osm0sis' busybox recommended)"
-  false
-fi
-set_busybox $_bb
-[ $? -ne 0 ] && exit $?
+
+
 [ -n "$ANDROID_SOCKET_adbd" ] && alias clear='echo'
-_bbname="$($_bb | head -n1 | awk '{print $1,$2}')"
-BBok=true
-if [ "$_bbname" == "" ]; then
-  _bbname="BusyBox not found!"
-  BBok=false
-fi
 
 #=========================== Default Functions and Variables
 
