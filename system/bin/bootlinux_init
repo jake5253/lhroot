@@ -1,13 +1,19 @@
 #!/system/bin/sh
 
-if [ -x /system/xbin/busybox ]; then
-	busybox=/system/xbin/busybox
-elif [ -x /system/bin/busybox ]; then
-	busybox=/system/bin/busybox
+# shellcheck disable=SC3045
+if [ -n "$(type -p busybox)" ]; then
+    busybox=$(type -p busybox)
+    export busybox
 else
-	echo "Busybox not found!  Install it, dummy!"
-	log "Busybox not found!  Install it, dummy!"
-	exit 1
+    if [ -x /system/xbin/busybox ]; then
+	    export busybox=/system/xbin/busybox
+    elif [ -x /system/bin/busybox ]; then
+	    export busybox=/system/bin/busybox
+    else
+	    echo "Busybox not found!  Install it, dummy!"
+	    log "Busybox not found!  Install it, dummy!"
+	    exit 1
+    fi
 fi
 
 ######### CHECK FOR ROOT #########
@@ -25,7 +31,7 @@ if [ -n "$1" ]; then
     if [ -d "$1" ]; then
         mnt=$1
     else
-        echo "Directory $1 does not found"
+        echo "Directory $1 not found"
         exit 1
     fi
 elif [ -d "/data/alpine" ]; then
@@ -58,7 +64,7 @@ fi
 # Responsible for creating files which are not found in Android,
 # but are needed in Linux
 
-if [ ! -e "/dev/stdin" -o ! -e "/dev/stdout" -o ! -e "/dev/stderr" ]; then
+if [ ! -e "/dev/stdin" ] || [ ! -e "/dev/stdout" ] || [ ! -e "/dev/stderr" ]; then
 	[ -e "/dev/stdin" ] || ln -s /proc/self/fd/0 /dev/stdin
 	[ -e "/dev/stdout" ] || ln -s /proc/self/fd/1 /dev/stdout
 	[ -e "/dev/stderr" ] || ln -s /proc/self/fd/2 /dev/stderr
@@ -142,7 +148,7 @@ mount_linux_chroot() {
     mkdir -p $mnt/external_sd
 
     mkdir -p $mnt/apex
-    cd "/apex"
+    cd "/apex" || { echo "Directory /apex not found."; exit 1; }
     for f in *; do
         mkdir -p "$mnt/apex/$f"
     done

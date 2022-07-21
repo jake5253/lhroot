@@ -111,7 +111,7 @@ grep_prop() {
 
 # Is mounted
 is_mounted() {
-  grep -q " `readlink -f $1` " /proc/mounts 2>/dev/null
+  grep -q " $(readlink -f $1) " /proc/mounts 2>/dev/null
   return $?
 }
 

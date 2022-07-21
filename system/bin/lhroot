@@ -44,6 +44,63 @@ set -x 2>$VERLOG
 # > You can add functions, variables & etc.
 # > Rather than editing the default vars above.
 
+fetch_dist () {
+    distro=${1}
+    folder="/data/${distro}"
+    tmp=/data/local/tmp
+    tarball=${tmp}/${distro}.tar.gz
+    local url=''
+    if [ ! -d ${folder} ]; then
+        if [ ! -f ${tarball} ]; then
+            echo "Downloading Rootfs, please wait..."
+            case $ARCH in
+                arm)
+                    archurl="armv7" ;;
+                arm64)
+                    archurl="aarch64" ;;
+                x86)
+                    archurl="x86" ;;
+                x64)
+                    archurl="x86_64" ;;
+                *)
+                    abort "unknown arch" ;;
+            esac
+            case $distro in
+                alpine)
+                    wget "https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/${archurl}/alpine-minirootfs-3.15.4-${archurl}.tar.gz" -qO $tarball & e_spinner
+                ;;
+                debian)
+                    wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Debian/${archurl}/debian-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                ;;
+                ubuntu)
+                    "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Ubuntu/${archurl}/ubuntu-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                ;;
+                void)
+                    "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Void/${archurl}/void-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                ;;
+                arch)
+                "https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz" -qO $tarball & e_spinner
+                "https://mirrors.edge.kernel.org/archlinux/iso/2022.05.01/archlinux-bootstrap-2022.05.01-${archurl}.tar.gz" -qO $tarball & e_spinner
+
+                ;;
+                manjaro)
+                    if [ "$ARCH" == "arm64" ]; then
+                        wget "https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz"
+                    else
+                        echo "Not available for your architecture"
+                        exit 1;
+                    fi
+                ;;
+                kali)
+                    wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Kali/${archurl}/kali-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                ;;
+                fedora)
+                    wget "https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz" -qO $tarball & e_spinner
+                ;;
+
+
+}
+
 alpine () {
 	folder="/data/alpine"
     tmp="/data/local/tmp"
