@@ -43,136 +43,137 @@ set -x 2>$VERLOG
 # > You can add functions, variables & etc.
 # > Rather than editing the default vars above.
 
-fetch_dist () {
+tmp=/data/local/tmp
+
+fetch_dist() {
     distro=${1}
+    ARCH=$(device_info)
     folder=/data/${distro}
-    tmp=/data/local/tmp
-    tarball=${tmp}/${distro}.tar.gz
     url=''
+    case "${distro}" in
+        alpine)
+            case "${ARCH}" in
+                arm)
+                    archurl="armv7" ;;
+                arm64)
+                    archurl="aarch64" ;;
+                x86)
+                    archurl="x86" ;;
+                x64)
+                    archurl="x86_64" ;;
+                *)
+                    abort "unknown arch" ;;
+            esac
+            url="https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/${archurl}/alpine-minirootfs-3.15.4-${archurl}.tar.gz"
+        ;;
+        debian)
+            case $ARCH in
+                arm)
+                    archurl="armhf" ;;
+                arm64)
+                    archurl="arm64" ;;
+                x86)
+                    archurl="i386" ;;
+                x64)
+                    archurl="amd64" ;;
+                *)
+                    abort "unknown arch" ;;
+            esac
+            url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Debian/${archurl}/debian-rootfs-${archurl}.tar.xz"
+        ;;
+        ubuntu)
+            case $ARCH in
+                arm)
+                    archurl="armhf" ;;
+                arm64)
+                    archurl="arm64" ;;
+                x86)
+                    archurl="i386" ;;
+                x64)
+                    archurl="amd64" ;;
+                *)
+                    abort "unknown arch"
+            esac
+            url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Ubuntu/${archurl}/ubuntu-rootfs-${archurl}.tar.xz"
+        ;;
+        void)
+            case $ARCH in
+                arm)
+                    archurl="armhf" ;;
+                arm64)
+                    archurl="arm64" ;;
+                x86)
+                    archurl="i386" ;;
+                x64)
+                    archurl="amd64" ;;
+                *)
+                    abort "unknown arch" ;;
+            esac
+            url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Void/${archurl}/void-rootfs-${archurl}.tar.xz"
+        ;;
+        arch)
+            case $ARCH in
+                arm)
+                    archurl="armv7"
+                    url="https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz"
+                ;;
+                arm64)
+                    archurl="aarch64"
+                    url="https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz"
+                ;;
+                x64)
+                    archurl="x86_64"
+                    url="https://mirrors.edge.kernel.org/archlinux/iso/2022.05.01/archlinux-bootstrap-2022.05.01-${archurl}.tar.gz"
+                ;;
+                *)
+                    abort "unknown arch, maybe your arch is x64?"
+            esac
+        ;;
+        manjaro)
+            case $ARCH in
+                arm64)
+                    url="https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz" ;;
+                *)
+                    abort "Only Support ARM64" ;;
+            esac
+        ;;
+        kali)
+            case $ARCH in
+                arm)
+                    archurl="armhf" ;;
+                arm64)
+                    archurl="arm64" ;;
+                x86)
+                    archurl="i386" ;;
+                x64)
+                    archurl="amd64" ;;
+                *)
+                    abort "unknown arch" ;;
+            esac
+            url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Kali/${archurl}/kali-rootfs-${archurl}.tar.xz"
+        ;;
+        fedora)
+            case $ARCH in
+                arm)
+                    archurl="armhf" ;;
+                arm64)
+                    archurl="arm64" ;;
+                x64)
+                    archurl="amd64" ;;
+                *)
+                    abort "unknown/unsupported arch" ;;
+            esac
+            url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz"
+        ;;
+        esac
     if [ ! -d "${folder}" ]; then
         if [ ! -f "${tarball}" ]; then
-            echo "Downloading Rootfs, please wait..."
-            case "${distro}" in
-                alpine)
-                    case "${ARCH}" in
-                        arm)
-                            archurl="armv7" ;;
-                        arm64)
-                            archurl="aarch64" ;;
-                        x86)
-                            archurl="x86" ;;
-                        x64)
-                            archurl="x86_64" ;;
-                        *)
-                            abort "unknown arch" ;;
-                    esac
-                    url="https://dl-cdn.alpinelinux.org/alpine/v3.15/releases/${archurl}/alpine-minirootfs-3.15.4-${archurl}.tar.gz"
-                ;;
-                debian)
-                    case $ARCH in
-                        arm)
-                            archurl="armhf" ;;
-                        arm64)
-                            archurl="arm64" ;;
-                        x86)
-                            archurl="i386" ;;
-                        x64)
-                            archurl="amd64" ;;
-                        *)
-                            abort "unknown arch" ;;
-                    esac
-                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Debian/${archurl}/debian-rootfs-${archurl}.tar.xz"
-                ;;
-                ubuntu)
-                    case $ARCH in
-                        arm)
-                            archurl="armhf" ;;
-                        arm64)
-                            archurl="arm64" ;;
-                        x86)
-                            archurl="i386" ;;
-                        x64)
-                            archurl="amd64" ;;
-                        *)
-                            abort "unknown arch"
-                    esac
-                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Ubuntu/${archurl}/ubuntu-rootfs-${archurl}.tar.xz"
-                ;;
-                void)
-                    case $ARCH in
-                        arm)
-                            archurl="armhf" ;;
-                        arm64)
-                            archurl="arm64" ;;
-                        x86)
-                            archurl="i386" ;;
-                        x64)
-                            archurl="amd64" ;;
-                        *)
-                            abort "unknown arch" ;;
-                    esac
-                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Void/${archurl}/void-rootfs-${archurl}.tar.xz"
-                ;;
-                arch)
-                    case $ARCH in
-                        arm)
-                            archurl="armv7"
-                            url="https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz"
-                        ;;
-                        arm64)
-                            archurl="aarch64"
-                            url="https://sg.mirror.archlinuxarm.org/os/ArchLinuxARM-${archurl}-latest.tar.gz"
-                        ;;
-                        x64)
-                            archurl="x86_64"
-                            url="https://mirrors.edge.kernel.org/archlinux/iso/2022.05.01/archlinux-bootstrap-2022.05.01-${archurl}.tar.gz"
-                        ;;
-                        *)
-                            abort "unknown arch, maybe your arch is x64?"
-                    esac
-                ;;
-                manjaro)
-                    case $ARCH in
-                        arm64)
-                            url="https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz" ;;
-                        *)
-                            abort "Only Support ARM64" ;;
-                    esac
-                ;;
-                kali)
-                    case $ARCH in
-                        arm)
-                            archurl="armhf" ;;
-                        arm64)
-                            archurl="arm64" ;;
-                        x86)
-                            archurl="i386" ;;
-                        x64)
-                            archurl="amd64" ;;
-                        *)
-                            abort "unknown arch" ;;
-                    esac
-                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Kali/${archurl}/kali-rootfs-${archurl}.tar.xz"
-                ;;
-                fedora)
-                    case $ARCH in
-                        arm)
-                            archurl="armhf" ;;
-                        arm64)
-                            archurl="arm64" ;;
-                        x64)
-                            archurl="amd64" ;;
-                        *)
-                            abort "unknown/unsupported arch" ;;
-                    esac
-                    url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz"
-                ;;
-                esac
-
-            wget -O $tarball ${url} & e_spinner
-            fi
+            echo -e "Fetching $ARCH $distro tarball from:\n$url"
+            tarball=${tmp}/$(basename $url)
+            wget -O "$tarball" "$url" & e_spinner || abort "Download failed"
+        fi
         mkdir -p "${folder}"
-        cd "${folder}" || abort "Folder could not be found"
+        cd "${folder}" || abort "Folder could not be found or created"
         echo "Decompressing Rootfs..."
         tar xf "${tarball}" 2> /dev/null||:
         cd "${HOME}" || abort '$HOME not found'

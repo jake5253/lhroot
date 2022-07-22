@@ -27,18 +27,12 @@ fi
 # set_busybox <busybox binary>
 # alias busybox applets
 setup_busybox() {
-  _bb=''
-  if [ -x $SYSTEM2/xbin/busybox ]; then
-    _bb=/sbin/.magisk/busybox/busybox
+  if [ -d /sbin/.magisk/busybox ]; then
+    PATH="/sbin/.magisk/busybox:$PATH"
   else
     echo "Busybox not detected";
     exit 1;
   fi
-  for i in $(${_bb} --list); do
-      if [ "$i" != 'echo' ]; then
-        alias "$i"="${1} $i" >/dev/null 2>&1
-      fi
-  done
 }
 
 
@@ -101,25 +95,21 @@ abort() {
   exit 1
 }
 
+device_info() {
+  ABI=$(getprop ro.product.cpu.abi | cut -d'-' -f1)
+  ARCH=''
+  if [ "$ABI" == "armeabi" ]; then 
+    ARCH=arm;
+  elif [ "$ABI" == "x86" ]; then 
+    ARCH=x86;
+  elif [ "$ABI" == "arm64" ]; then 
+    ARCH=arm64;
+  elif [ "$ABI" == "x86_64" ]; then 
+    ARCH=x64; 
+  fi;
+echo $ARCH
+}
 
-# Device Info
-# Variables: BRAND MODEL DEVICE API ABI ABI2 ABILONG ARCH
-BRAND=$(getprop ro.product.brand)
-MODEL=$(getprop ro.product.model)
-DEVICE=$(getprop ro.product.device)
-ROM=$(getprop ro.build.display.id)
-API=$(grep_prop ro.build.version.sdk)
-ABI=$(grep_prop ro.product.cpu.abi | cut -c-3)
-ABI2=$(grep_prop ro.product.cpu.abi2 | cut -c-3)
-ABILONG=$(grep_prop ro.product.cpu.abi)
-ARCH=arm
-ARCH32=arm
-IS64BIT=false
-if [ "$ABI" = "x86" ]; then ARCH=x86; ARCH32=x86; fi;
-if [ "$ABI2" = "x86" ]; then ARCH=x86; ARCH32=x86; fi;
-if [ "$ABILONG" = "arm64-v8a" ]; then ARCH=arm64; ARCH32=arm; IS64BIT=true; fi;
-if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; ARCH32=x86; IS64BIT=true; fi;
-  
 # Version Number
 VER=$(grep_prop version $MODDIR/module.prop)
 # Version Code
@@ -244,29 +234,29 @@ test_connection() {
 
 # Log files will be uploaded to termbin.com
 # Logs included: VERLOG LOG oldVERLOG oldLOG
-upload_logs() {
-  $BBok && {
-    test_connection || exit
-    echo "Uploading logs"
-    [ -s $VERLOG ] && verUp=$(cat $VERLOG | nc termbin.com 9999) || verUp=none
-    [ -s $oldVERLOG ] && oldverUp=$(cat $oldVERLOG | nc termbin.com 9999) || oldverUp=none
-    [ -s $LOG ] && logUp=$(cat $LOG | nc termbin.com 9999) || logUp=none
-    [ -s $oldLOG ] && oldlogUp=$(cat $oldLOG | nc termbin.com 9999) || oldlogUp=none
-    [ -s $stdoutLOG ] && stdoutUp=$(cat $stdoutLOG | nc termbin.com 9999) || stdoutUp=none
-    [ -s $oldstdoutLOG ] && oldstdoutUp=$(cat $oldstdoutLOG | nc termbin.com 9999) || oldstdoutUp=none
-    echo -n "Link: "
-    echo "$MODEL ($DEVICE) API $API\n$ROM\n$ID\n
-    O_Verbose: $oldverUp
-    Verbose:   $verUp
+# upload_logs() {
+#   $BBok && {
+#     test_connection || exit
+#     echo "Uploading logs"
+#     [ -s $VERLOG ] && verUp=$(cat $VERLOG | nc termbin.com 9999) || verUp=none
+#     [ -s $oldVERLOG ] && oldverUp=$(cat $oldVERLOG | nc termbin.com 9999) || oldverUp=none
+#     [ -s $LOG ] && logUp=$(cat $LOG | nc termbin.com 9999) || logUp=none
+#     [ -s $oldLOG ] && oldlogUp=$(cat $oldLOG | nc termbin.com 9999) || oldlogUp=none
+#     [ -s $stdoutLOG ] && stdoutUp=$(cat $stdoutLOG | nc termbin.com 9999) || stdoutUp=none
+#     [ -s $oldstdoutLOG ] && oldstdoutUp=$(cat $oldstdoutLOG | nc termbin.com 9999) || oldstdoutUp=none
+#     echo -n "Link: "
+#     echo "$MODEL ($DEVICE) API $API\n$ROM\n$ID\n
+#     O_Verbose: $oldverUp
+#     Verbose:   $verUp
 
-    O_STDOUT:  $oldstdoutUp
-    STDOUT:    $stdoutUp
+#     O_STDOUT:  $oldstdoutUp
+#     STDOUT:    $stdoutUp
 
-    O_Log: $oldlogUp
-    Log:   $logUp" | nc termbin.com 9999
-  } || echo "Busybox not found!"
-  exit
-}
+#     O_Log: $oldlogUp
+#     Log:   $logUp" | nc termbin.com 9999
+#   } || echo "Busybox not found!"
+#   exit
+# }
 
 # Print Random
 # Prints a message at random
