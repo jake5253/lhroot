@@ -169,7 +169,7 @@ fetch_dist () {
                 ;;
                 esac
 
-            wget ${url} -qO $tarball & e_spinner
+            wget -O $tarball ${url} & e_spinner
             fi
         mkdir -p "${folder}"
         cd "${folder}" || abort "Folder could not be found"
