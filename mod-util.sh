@@ -29,9 +29,7 @@ fi
 setup_busybox() {
   _bb=''
   if [ -x $SYSTEM2/xbin/busybox ]; then
-    _bb=$SYSTEM2/xbin/busybox
-  elif [ -x $SYSTEM2/bin/busybox ]; then
-    _bb=$SYSTEM2/bin/busybox
+    _bb=/sbin/.magisk/busybox/busybox
   else
     echo "Busybox not detected";
     exit 1;
