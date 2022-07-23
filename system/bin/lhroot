@@ -48,7 +48,6 @@ tmp=/data/local/tmp
 fetch_dist() {
     distro=${1}
     ARCH=$(device_info)
-    folder=/data/${distro}
     url=''
     case "${distro}" in
         alpine)
@@ -134,7 +133,7 @@ fetch_dist() {
                 arm64)
                     url="https://archive.org/download/manjaro-rootfs-arm64.tar/manjaro-rootfs-arm64.tar.xz" ;;
                 *)
-                    abort "Only Support ARM64" ;;
+                    abort "Only ARM64 is supported" ;;
             esac
         ;;
         kali)
@@ -165,11 +164,12 @@ fetch_dist() {
             esac
             url="https://raw.githubusercontent.com/FerryAr/lhroot-repo/main/Rootfs/Fedora/${archurl}/fedora-rootfs-${archurl}.tar.xz"
         ;;
-        esac
+    esac
+    folder=/data/${distro}
+    tarball=${tmp}/$(basename $url)
     if [ ! -d "${folder}" ]; then
         if [ ! -f "${tarball}" ]; then
             echo -e "Fetching $ARCH $distro tarball from:\n$url"
-            tarball=${tmp}/$(basename $url)
             wget -O "$tarball" "$url" & e_spinner || abort "Download failed"
         fi
         mkdir -p "${folder}"
